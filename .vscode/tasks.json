@@ -1,0 +1,88 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Make: Compile main",
+      "type": "shell",
+      "command": "mingw32-make",
+      "windows": {
+        "command": "mingw32-make"
+      },
+      "linux": {
+        "command": "make"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Remove Bin Contents",
+      "type": "shell",
+      "command": "mingw32-make",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "rm ./bin/*"
+        ]
+      },
+      "linux": {
+        "command": "make",
+        "args": [
+          "clean"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Execute App",
+      "type": "shell",
+      "command": "./bin/main",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "./bin/main.exe"
+        ]
+      },
+      "linux": {
+        "command": "./bin/main"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build and Execute App",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Make: Compile main",
+        "Execute App"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Re:Build and Execute App",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Remove Bin Contents",
+        "Make: Compile main",
+        "Execute App"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
