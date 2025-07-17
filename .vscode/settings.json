@@ -11,6 +11,8 @@
     "functional": "c",
     "tuple": "c",
     "type_traits": "c",
-    "utility": "c"
+    "utility": "c",
+    "raylib.h": "c",
+    "data_persistence.h": "c"
   }
 }

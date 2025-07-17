@@ -8,6 +8,7 @@
 // From src dir
 #include "defines.h"
 #include "components/InputFieldComponent.h"
+#include "utilities/data_persistence.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "../include/raygui.h"
@@ -102,7 +103,14 @@ int main(void) {
   xp_window_settings window_settings;
   window_settings.width = 720;
   window_settings.height = 480;
-  window_settings.title = "XP Tracker";  
+  window_settings.title = "XP Tracker";
+
+  user_project_data user_data = {
+    .current_exp = 0.0f,
+    .max_exp = 100.0f,
+    .user_level = 1,
+    .project_name = "c_programming"
+  };
 
   InitWindow(window_settings.width, window_settings.height, window_settings.title);
   SetTargetFPS(FPS);
@@ -121,15 +129,15 @@ int main(void) {
   NumberInputField hoursInput = {
     .bounds = (Rectangle) {center_screen_pos_x - 150, (center_screen_pos_y / 2) + 20, 100 ,50},
     .isFocused = false,
-    .length = 0,
-    .value = {'\0'}
+    .length = 1,
+    .value = {'0', '\0'}
   };
   
   NumberInputField minutesInput = {
     .bounds = (Rectangle) {center_screen_pos_x + 50, (center_screen_pos_y / 2) + 20, 100 ,50},
     .isFocused = false,
-    .length = 0,
-    .value = {'\0'},
+    .length = 1,
+    .value = {'0' ,'\0'},
   };
   
   cursor_settings cursor_setting = {
@@ -181,6 +189,12 @@ int main(void) {
             handle_level_up(current_level_p);
             showMessageBox = true;
           }
+        }
+
+        if (save_data(user_data)) {
+          TraceLog(LOG_INFO, "File [%s.dat] Saved successfully!", user_data.project_name);
+        } else {
+          TraceLog(LOG_WARNING, "File [%s.dat] was not saved successfully! T_T", user_data.project_name);
         }
       }
 
