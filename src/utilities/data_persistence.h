@@ -17,4 +17,4 @@ typedef struct user_project_data {
 
 bool save_data(user_project_data user_data);
 
-// user_project_data load_data(char *project);
+void load_data(user_project_data user_data);

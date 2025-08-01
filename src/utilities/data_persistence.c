@@ -1,8 +1,10 @@
 #include "data_persistence.h"
 
+char data_ext[] = ".dat";
+
 bool save_data(user_project_data user_data) {
-  char json_ext[] = ".dat";
-  char *project_file_name = strcat(user_data.project_name, json_ext);
+  char data_ext[] = ".dat";
+  char *project_file_name = strcat(user_data.project_name, data_ext);
 
   TraceLog(LOG_INFO, "Attempting to save game!");
 
@@ -24,4 +26,25 @@ bool save_data(user_project_data user_data) {
   return success == 1 ? true : false;
 }
 
-// user_project_data load_data(char *project) {};
+// FIXME: Not loading in game data!
+void load_data(user_project_data user_data) {
+  char data_ext[] = ".dat";
+  char *project_file_name = strcat(user_data.project_name, data_ext);
+
+  TraceLog(LOG_INFO, "Attempting to load game data");
+
+  FILE *fileData = fopen(project_file_name, "rb");
+
+
+  if (fileData != NULL) {
+    size_t num_of_instance = 1;
+    size_t data_read = fread(&user_data, sizeof(user_project_data), num_of_instance, fileData);
+
+    if (data_read != 1) {
+      TraceLog(LOG_ERROR, "Failed to read data from file.");
+      fclose(fileData);
+    }
+
+    fclose(fileData);
+  }
+}

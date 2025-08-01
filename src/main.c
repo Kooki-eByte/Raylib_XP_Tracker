@@ -105,12 +105,15 @@ int main(void) {
   window_settings.height = 480;
   window_settings.title = "XP Tracker";
 
+  // Initial user data
   user_project_data user_data = {
     .current_exp = 0.0f,
     .max_exp = 100.0f,
     .user_level = 1,
     .project_name = "c_programming"
   };
+
+  load_data(user_data);
 
   InitWindow(window_settings.width, window_settings.height, window_settings.title);
   SetTargetFPS(FPS);
@@ -156,7 +159,9 @@ int main(void) {
   f32 *current_exp_p = &current_exp;
   f32 *current_max_exp_p = &current_max_exp;
   b32 *current_level_p = &current_level;
+
   
+
   // Main loop
   while (!WindowShouldClose()) {
     update_number_input_field(&hoursInput, &cursor_setting);
