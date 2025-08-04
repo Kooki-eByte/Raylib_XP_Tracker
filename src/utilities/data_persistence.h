@@ -15,6 +15,6 @@ typedef struct user_project_data {
   f32 max_exp;
 } user_project_data;
 
-bool save_data(user_project_data user_data);
+bool save_data(const user_project_data *user_data);
 
-void load_data(user_project_data user_data);
+void load_data(user_project_data *user_data);

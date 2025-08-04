@@ -113,7 +113,7 @@ int main(void) {
     .project_name = "c_programming"
   };
 
-  load_data(user_data);
+  load_data(&user_data);
 
   InitWindow(window_settings.width, window_settings.height, window_settings.title);
   SetTargetFPS(FPS);
@@ -150,18 +150,6 @@ int main(void) {
     .cursor_OFF_time = 0.5f
   };
   
-  // User data
-  // TODO: Get this information from save file data
-  f32 current_exp = 0.0f;
-  f32 current_max_exp = 100.0f;
-  b32 current_level = 1;
-
-  f32 *current_exp_p = &current_exp;
-  f32 *current_max_exp_p = &current_max_exp;
-  b32 *current_level_p = &current_level;
-
-  
-
   // Main loop
   while (!WindowShouldClose()) {
     update_number_input_field(&hoursInput, &cursor_setting);
@@ -171,35 +159,35 @@ int main(void) {
     ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
     
     DrawText("LVL:", 10, 10, 20, DARKGRAY);
-    DrawText(int_to_string(current_level), 60, 10, 20, BLACK);
+    DrawText(int_to_string(user_data.user_level), 60, 10, 20, BLACK);
 
     GuiProgressBar(
       (Rectangle){ get_window_center_x(&window_settings), 50, window_settings.width / 4, 25 },
         "EXP BAR:",
-        get_exp_percentage(current_max_exp, current_exp_p),
-        current_exp_p,
+        get_exp_percentage(user_data.max_exp, &user_data.current_exp),
+        &user_data.current_exp,
         0.0f,
-        current_max_exp
+        user_data.max_exp
       );
       
       if (GuiButton((Rectangle){ center_screen_pos_x - (120 / 2), center_screen_pos_y - (30 / 2), 120, 30 }, "SUMBIT TIME")) {
         if (hoursInput.length > 0) {
-          if (gain_exp_hour(atoi(hoursInput.value), current_exp_p, current_max_exp_p)) {
-            handle_level_up(current_level_p);
+          if (gain_exp_hour(atoi(hoursInput.value), &user_data.current_exp, &user_data.max_exp)) {
+            handle_level_up(&user_data.user_level);
             showMessageBox = true;
           }
         }
         if (minutesInput.length > 0) {
-          if (gain_exp_min(atoi(minutesInput.value), current_exp_p, current_max_exp_p)) {
-            handle_level_up(current_level_p);
+          if (gain_exp_min(atoi(minutesInput.value), &user_data.current_exp, &user_data.max_exp)) {
+            handle_level_up(&user_data.user_level);
             showMessageBox = true;
           }
         }
 
-        if (save_data(user_data)) {
-          TraceLog(LOG_INFO, "File [%s.dat] Saved successfully!", user_data.project_name);
+        if (save_data(&user_data)) {
+          TraceLog(LOG_INFO, "File [%s] Saved successfully!", user_data.project_name);
         } else {
-          TraceLog(LOG_WARNING, "File [%s.dat] was not saved successfully! T_T", user_data.project_name);
+          TraceLog(LOG_WARNING, "File [%s] was not saved successfully! T_T", user_data.project_name);
         }
       }
 
