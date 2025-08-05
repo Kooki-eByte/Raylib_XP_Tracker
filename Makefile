@@ -1,5 +1,7 @@
 SRC_CORE := $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
-OUTPUT := ./bin/main
+OUTPUT_BIN := ./bin
+LINUX_APP := $(OUTPUT_BIN)/main
+WINDOWS_APP := $(OUTPUT_BIN)/main.exe
 
 # Compiler Settings
 CC := gcc
@@ -7,15 +9,26 @@ C_STD := c99
 CFLAGS := -Wall -Werror -Wimplicit-function-declaration
 DEBUG_FLAG := -g
 
-# raylib link flags
+# OS-specific settings
+ifeq ($(OS),Windows_NT)
+RAYLIB_FLAGS := -lraylib -lgdi32 -lwinmm
+LIB := -Llib
+RAYLIB_DLL := $(LIB)
+MAIN_APP_TARGET := $(WINDOWS_APP)
+else
+# Linux
 RAYLIB_FLAGS := -lraylib -lgdi32 -lwinmm
 RAYLIB_LINUX_FLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+MAIN_APP_TARGET := $(LINUX_APP)
+endif
 
-all:
-	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(OUTPUT) $(CFLAGS) $(RAYLIB_LINUX_FLAGS)
+all: $(MAIN_APP_TARGET)
 
-# Command that needs to run is this:
-# gcc -std=c99 -o main main.c -Wall -Werror -Wimplicit-function-declaration -Llib -lraylib -lgdi32 -lwinmm
+$(LINUX_APP):
+	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(MAIN_APP_TARGET) $(CFLAGS) $(RAYLIB_LINUX_FLAGS)
+
+$(WINDOWS_APP):
+	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(MAIN_APP_TARGET) $(CFLAGS) $(RAYLIB_DLL) $(RAYLIB_FLAGS)
 
 clean:
-	rm ./bin/main
+	rm -rf $(OUTPUT_BIN)/main.exe
