@@ -13,6 +13,7 @@
     "type_traits": "c",
     "utility": "c",
     "raylib.h": "c",
-    "data_persistence.h": "c"
+    "data_persistence.h": "c",
+    "inputfieldcomponent.h": "c"
   }
 }
