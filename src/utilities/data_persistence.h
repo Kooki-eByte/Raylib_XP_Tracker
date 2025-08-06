@@ -8,13 +8,14 @@
 
 #define SAVE_BIN "./save_bin/"
 
-typedef struct user_project_data {
+typedef struct UserProjectData
+{
   char project_name[255];
   b32 user_level;
   f32 current_exp;
   f32 max_exp;
-} user_project_data;
+} UserProjectData;
 
-bool save_data(const user_project_data *user_data);
+bool save_data(const UserProjectData *user_data);
 
-void load_data(user_project_data *user_data);
+void load_data(UserProjectData *user_data);
