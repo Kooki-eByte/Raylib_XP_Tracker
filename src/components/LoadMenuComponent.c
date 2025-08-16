@@ -40,8 +40,10 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
 
       DrawText(save_title, (ws->width / 2) - 75, (ws->height / 2.25) + (20 * saves), 16, BEIGE);
       
+      /* FIXME: When clicking delete the screen will still work but
+      the delete button will flicker blue constantly and the
+      save data content will not update for some reason */
       if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
-        // ZERO out the index of the save file
         if (delete_data(save_title)) {
           *sds = GetUserSaveContent();
         }
