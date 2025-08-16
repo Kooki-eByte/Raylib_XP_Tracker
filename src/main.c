@@ -7,19 +7,17 @@
 
 // From src dir
 #include "defines.h"
+
+// Components
 #include "components/InputFieldComponent.h"
+#include "components/LoadMenuComponent.h"
+
+// Utilities
 #include "utilities/data_persistence.h"
+#include "utilities/settings.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "../include/raygui.h"
-
-const i32 FPS = 60; 
-
-typedef struct xp_window_settings {
-  i32 width;
-  i32 height;
-  char *title;
-} xp_window_settings;
 
 int get_window_center_x(xp_window_settings *ws) {
   return (ws->height / 2);
@@ -100,23 +98,25 @@ char *int_to_string(b32 num) {
 }
 
 int main(void) {
-  xp_window_settings window_settings;
-  window_settings.width = 720;
-  window_settings.height = 480;
-  window_settings.title = "XP Tracker";
+  xp_window_settings window_settings = {
+    .width = 720,
+    .height = 480,
+    .title = "XP Tracker",
+    .fps = 60
+  };
 
   // Initial user data
   user_project_data user_data = {
     .current_exp = 0.0f,
     .max_exp = 100.0f,
     .user_level = 1,
-    .project_name = "c_programming"
+    .project_name = "open_gl_learning"
   };
 
   load_data(&user_data);
 
   InitWindow(window_settings.width, window_settings.height, window_settings.title);
-  SetTargetFPS(FPS);
+  SetTargetFPS(window_settings.fps);
 
   // Helper variables //
   int center_screen_pos_x = (window_settings.width / 2);
@@ -149,60 +149,75 @@ int main(void) {
     .cursor_ON_time = 1.0f,
     .cursor_OFF_time = 0.5f
   };
-  
+
+  bool is_load_file_menu = true;
+
+  saveDataSelector save_data_content = GetUserSaveContent();
+
   // Main loop
   while (!WindowShouldClose()) {
-    update_number_input_field(&hoursInput, &cursor_setting);
-    update_number_input_field(&minutesInput, &cursor_setting);
-    
-    BeginDrawing();
-    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-    
-    DrawText("LVL:", 10, 10, 20, DARKGRAY);
-    DrawText(int_to_string(user_data.user_level), 60, 10, 20, BLACK);
-
-    GuiProgressBar(
-      (Rectangle){ get_window_center_x(&window_settings), 50, window_settings.width / 4, 25 },
-        "EXP BAR:",
-        get_exp_percentage(user_data.max_exp, &user_data.current_exp),
-        &user_data.current_exp,
-        0.0f,
-        user_data.max_exp
-      );
+    // Run load menu
+    if (is_load_file_menu) {
+      // run load menu component
+      LoadMenuComponent(&save_data_content, &window_settings);
+      if (save_data_content.selected_index >= 1) {
+        is_load_file_menu = false;
+      }
+    } 
+    else 
+    {
+      update_number_input_field(&hoursInput, &cursor_setting);
+      update_number_input_field(&minutesInput, &cursor_setting);
       
-      if (GuiButton((Rectangle){ center_screen_pos_x - (120 / 2), center_screen_pos_y - (30 / 2), 120, 30 }, "SUMBIT TIME")) {
-        if (hoursInput.length > 0) {
-          if (gain_exp_hour(atoi(hoursInput.value), &user_data.current_exp, &user_data.max_exp)) {
-            handle_level_up(&user_data.user_level);
-            showMessageBox = true;
+      BeginDrawing();
+      ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+      
+      DrawText("LVL:", 10, 10, 20, DARKGRAY);
+      DrawText(int_to_string(user_data.user_level), 60, 10, 20, BLACK);
+
+      GuiProgressBar(
+        (Rectangle){ get_window_center_x(&window_settings), 50, window_settings.width / 4, 25 },
+          "EXP BAR:",
+          get_exp_percentage(user_data.max_exp, &user_data.current_exp),
+          &user_data.current_exp,
+          0.0f,
+          user_data.max_exp
+        );
+        
+        if (GuiButton((Rectangle){ center_screen_pos_x - (120 / 2), center_screen_pos_y - (30 / 2), 120, 30 }, "SUMBIT TIME")) {
+          if (hoursInput.length > 0) {
+            if (gain_exp_hour(atoi(hoursInput.value), &user_data.current_exp, &user_data.max_exp)) {
+              handle_level_up(&user_data.user_level);
+              showMessageBox = true;
+            }
+          }
+          if (minutesInput.length > 0) {
+            if (gain_exp_min(atoi(minutesInput.value), &user_data.current_exp, &user_data.max_exp)) {
+              handle_level_up(&user_data.user_level);
+              showMessageBox = true;
+            }
+          }
+
+          if (save_data(&user_data)) {
+            TraceLog(LOG_INFO, "File [%s] Saved successfully!", user_data.project_name);
+          } else {
+            TraceLog(LOG_WARNING, "File [%s] was not saved successfully! T_T", user_data.project_name);
           }
         }
-        if (minutesInput.length > 0) {
-          if (gain_exp_min(atoi(minutesInput.value), &user_data.current_exp, &user_data.max_exp)) {
-            handle_level_up(&user_data.user_level);
-            showMessageBox = true;
-          }
+
+        if (showMessageBox) {
+        int result = GuiMessageBox((Rectangle){ (window_settings.width / 2) - 125, (window_settings.height / 2) - 50, 250, 100 }, "#191#LEVEL UP!", "You Leveled Up! Congrats!", "YIPPEE!");
+
+          if (result >= 0) showMessageBox = false;
         }
 
-        if (save_data(&user_data)) {
-          TraceLog(LOG_INFO, "File [%s] Saved successfully!", user_data.project_name);
-        } else {
-          TraceLog(LOG_WARNING, "File [%s] was not saved successfully! T_T", user_data.project_name);
-        }
-      }
+        DrawText("Hours:", center_screen_pos_x - 150, (center_screen_pos_y / 2), 20, DARKGRAY);
+        DrawText("Minutes:", center_screen_pos_x + 50, (center_screen_pos_y / 2), 20, DARKGRAY);
 
-      if (showMessageBox) {
-      int result = GuiMessageBox((Rectangle){ (window_settings.width / 2) - 125, (window_settings.height / 2) - 50, 250, 100 }, "#191#LEVEL UP!", "You Leveled Up! Congrats!", "YIPPEE!");
-
-        if (result >= 0) showMessageBox = false;
-      }
-
-      DrawText("Hours:", center_screen_pos_x - 150, (center_screen_pos_y / 2), 20, DARKGRAY);
-      DrawText("Minutes:", center_screen_pos_x + 50, (center_screen_pos_y / 2), 20, DARKGRAY);
-
-      draw_number_input_field(&hoursInput, &cursor_setting);
-      draw_number_input_field(&minutesInput, &cursor_setting);
-    EndDrawing();
+        draw_number_input_field(&hoursInput, &cursor_setting);
+        draw_number_input_field(&minutesInput, &cursor_setting);
+      EndDrawing();
+    }
   }
 
   CloseWindow();
