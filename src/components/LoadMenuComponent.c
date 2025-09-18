@@ -3,8 +3,17 @@
 saveDataSelector GetUserSaveContent() {
   DIR *dir;
   struct dirent *entry;
-  
+
   saveDataSelector saveData = {0};
+
+  // NOTE:(Cristian) Need to allocate for each string in the array.
+  // So we can put these in actual locations in memory.
+  saveData.user_save_data[0] = malloc(sizeof(char) * 256);
+  strcpy(saveData.user_save_data[0], "\0");
+  saveData.user_save_data[1] = malloc(sizeof(char) * 256);
+  strcpy(saveData.user_save_data[1], "\0");
+  saveData.user_save_data[2] = malloc(sizeof(char) * 256);
+  strcpy(saveData.user_save_data[2], "\0");
 
   dir = opendir(SAVE_BIN);
   if (dir == NULL) {
@@ -20,7 +29,8 @@ saveDataSelector GetUserSaveContent() {
     }
 
     printf("Filename: %s\n", entry->d_name);
-    saveData.user_save_data[ind++] = entry->d_name; 
+    strcpy(saveData.user_save_data[ind], entry->d_name);
+    ind++;
   }
 
   return saveData;
@@ -35,14 +45,14 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
     // Create Save files available to click as well as a delete button
     for (b32 saves = 0; saves < 3; saves++) {
       // If less than 3 save files are found then skip step
-      if (sds->user_save_data[saves] == NULL) continue;
+      if (sds->user_save_data[saves] == NULL || strlen(sds->user_save_data[saves]) == 0) continue;
       char *save_title = sds->user_save_data[saves];
 
       DrawText(save_title, (ws->width / 2) - 75, (ws->height / 2.25) + (20 * saves), 16, BEIGE);
-      
+
       /* FIXME: When clicking delete the screen will still work but
-      the delete button will flicker blue constantly and the
-      save data content will not update for some reason */
+          the delete button will flicker blue constantly and the
+          save data content will not update for some reason */
       if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
         if (delete_data(save_title)) {
           *sds = GetUserSaveContent();
@@ -52,7 +62,7 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
 
     if (GuiButton((Rectangle){ (ws->width / 2), (ws->height / 2.25) + 200, 100, 20 }, "Load Save")) {
       sds->selected_index = 1;
-    } 
+    }
 
-  EndDrawing(); 
+  EndDrawing();
 }

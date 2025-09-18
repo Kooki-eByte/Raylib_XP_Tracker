@@ -30,5 +30,5 @@ $(LINUX_APP):
 $(WINDOWS_APP):
 	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(MAIN_APP_TARGET) $(CFLAGS) $(RAYLIB_DLL) $(RAYLIB_FLAGS)
 
-clean:
-	rm -rf $(OUTPUT_BIN)/main.exe
+#clean:
+#	rm -rf $(OUTPUT_BIN)/main.exe

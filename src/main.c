@@ -64,7 +64,6 @@ bool gain_exp_min(b32 min_spent, f32 *exp, f32 *current_max_exp) {
   
   // Formula for exp gained
   f32 exp_gained = min_spent * 2 + 5;
-  //
   f32 temp_exp_hold = *exp + exp_gained;
 
   if (temp_exp_hold >= *current_max_exp) {
@@ -110,7 +109,7 @@ int main(void) {
     .current_exp = 0.0f,
     .max_exp = 100.0f,
     .user_level = 1,
-    .project_name = "open_gl_learning"
+    .project_name = "tester_1"
   };
 
   load_data(&user_data);
@@ -153,6 +152,7 @@ int main(void) {
   bool is_load_file_menu = true;
 
   saveDataSelector save_data_content = GetUserSaveContent();
+  printf("Save data num 1: %s\n", save_data_content.user_save_data[0]);
 
   // Main loop
   while (!WindowShouldClose()) {
@@ -218,6 +218,10 @@ int main(void) {
         draw_number_input_field(&minutesInput, &cursor_setting);
       EndDrawing();
     }
+  }
+
+  for (int savedata_index = 0; savedata_index < 3; savedata_index++) {
+    free(save_data_content.user_save_data[savedata_index]);
   }
 
   CloseWindow();
