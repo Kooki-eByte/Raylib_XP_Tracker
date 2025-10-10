@@ -69,8 +69,8 @@ void load_data(user_project_data *user_data) {
 u8 delete_data(char *fileName) {
   char *full_path_to_file = get_full_path(fileName);
   
-  printf("This is being ran with this file [%s]\n", full_path_to_file);
-  if (remove(full_path_to_file) == 0) {
+  // printf("This is being ran with this file [%s]\n", full_path_to_file);
+  if (!remove(full_path_to_file)) {
     printf("File [%s] deleted successfully!\n", fileName);
     return true;
   } else {
