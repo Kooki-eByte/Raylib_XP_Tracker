@@ -109,7 +109,7 @@ int main(void) {
     .current_exp = 0.0f,
     .max_exp = 100.0f,
     .user_level = 1,
-    .project_name = "tester_1"
+    .project_name = "test1"
   };
 
   load_data(&user_data);
@@ -151,12 +151,12 @@ int main(void) {
 
   bool is_load_file_menu = true;
 
-  saveDataSelector save_data_content = GetUserSaveContent();
-  printf("Save data num 1: %s\n", save_data_content.user_save_data[0]);
+  saveDataSelector save_data_content = {0}; 
+  save_data_content = GetUserSaveContent();
 
-  // Main loop
+  // Game loop
   while (!WindowShouldClose()) {
-    // Run load menu
+// Run load menu
     if (is_load_file_menu) {
       // run load menu component
       LoadMenuComponent(&save_data_content, &window_settings);
@@ -166,6 +166,7 @@ int main(void) {
     } 
     else 
     {
+// Main loop
       update_number_input_field(&hoursInput, &cursor_setting);
       update_number_input_field(&minutesInput, &cursor_setting);
       
