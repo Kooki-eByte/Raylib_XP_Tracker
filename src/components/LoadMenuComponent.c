@@ -1,5 +1,7 @@
 #include "LoadMenuComponent.h"
 
+#define MAX_SAVE_CHAR_LIMIT 256
+
 saveDataSelector GetUserSaveContent() {
   DIR *dir;
   struct dirent *entry;
@@ -8,11 +10,11 @@ saveDataSelector GetUserSaveContent() {
 
   // NOTE:(Cristian) Need to allocate for each string in the array.
   // So we can put these in actual locations in memory.
-  saveData.user_save_data[0] = malloc(sizeof(char) * 256);
+  saveData.user_save_data[0] = malloc(sizeof(char) * MAX_SAVE_CHAR_LIMIT);
   strcpy(saveData.user_save_data[0], "\0");
-  saveData.user_save_data[1] = malloc(sizeof(char) * 256);
+  saveData.user_save_data[1] = malloc(sizeof(char) * MAX_SAVE_CHAR_LIMIT);
   strcpy(saveData.user_save_data[1], "\0");
-  saveData.user_save_data[2] = malloc(sizeof(char) * 256);
+  saveData.user_save_data[2] = malloc(sizeof(char) * MAX_SAVE_CHAR_LIMIT);
   strcpy(saveData.user_save_data[2], "\0");
 
   dir = opendir(SAVE_BIN);
@@ -24,7 +26,7 @@ saveDataSelector GetUserSaveContent() {
 
   while ((entry = readdir(dir)) != NULL) {
     if (strlen(entry->d_name) <= 1 || strstr(entry->d_name, "..\0")) {
-      printf("not reading the . and .. of the directories\n");
+      // printf("not reading the . and .. of the directories\n");
       continue;
     }
 
@@ -38,6 +40,7 @@ saveDataSelector GetUserSaveContent() {
 
 void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
   BeginDrawing();
+    ClearBackground(BLACK);
     // if (GuiButton((Rectangle){ center_screen_pos_x - (120 / 2), center_screen_pos_y - (30 / 2), 120, 30 }, "LOAD FILE")) {
     //   is_load_file_menu = false;
     // }
@@ -46,7 +49,10 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
     for (b32 saves = 0; saves < 3; saves++) {
       // If less than 3 save files are found then skip step
       if (sds->user_save_data[saves] == NULL || strlen(sds->user_save_data[saves]) == 0) continue;
-      char *save_title = sds->user_save_data[saves];
+      printf("Filename: [ %s ] is being read now!\n", sds->user_save_data[saves]);
+      char save_title[MAX_SAVE_CHAR_LIMIT];
+      strncpy(save_title, sds->user_save_data[saves], MAX_SAVE_CHAR_LIMIT - 1);
+      save_title[MAX_SAVE_CHAR_LIMIT - 1] = '\0';  // Ensure null termination
 
       DrawText(save_title, (ws->width / 2) - 75, (ws->height / 2.25) + (20 * saves), 16, BEIGE);
 
