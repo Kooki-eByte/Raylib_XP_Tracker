@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 // From inlcude dir
@@ -109,10 +110,8 @@ int main(void) {
     .current_exp = 0.0f,
     .max_exp = 100.0f,
     .user_level = 1,
-    .project_name = "test1"
+    .project_name = ""
   };
-
-  load_data(&user_data);
 
   InitWindow(window_settings.width, window_settings.height, window_settings.title);
   SetTargetFPS(window_settings.fps);
@@ -161,6 +160,9 @@ int main(void) {
       // run load menu component
       LoadMenuComponent(&save_data_content, &window_settings);
       if (save_data_content.selected_index >= 1) {
+        char *project = save_data_content.user_save_data[(save_data_content.selected_index - 1)];
+        strcpy_s(user_data.project_name, sizeof(user_data.project_name), project);
+        load_data(&user_data);
         is_load_file_menu = false;
       }
     } 
