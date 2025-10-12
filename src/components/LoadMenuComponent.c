@@ -41,9 +41,6 @@ saveDataSelector GetUserSaveContent() {
 void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
   BeginDrawing();
     ClearBackground(BLACK);
-    // if (GuiButton((Rectangle){ center_screen_pos_x - (120 / 2), center_screen_pos_y - (30 / 2), 120, 30 }, "LOAD FILE")) {
-    //   is_load_file_menu = false;
-    // }
 
     // Create Save files available to click as well as a delete button
     for (b32 saves = 0; saves < 3; saves++) {
@@ -56,18 +53,16 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
 
       DrawText(save_title, (ws->width / 2) - 75, (ws->height / 2.25) + (20 * saves), 16, BEIGE);
 
-      /* FIXME: When clicking delete the screen will still work but
-          the delete button will flicker blue constantly and the
-          save data content will not update for some reason */
-      if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
+      // Handle Delete
+      if (GuiButton((Rectangle){ (ws->width / 2) + 200, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
         if (delete_data(save_title)) {
           *sds = GetUserSaveContent();
         }
       }
-    }
 
-    if (GuiButton((Rectangle){ (ws->width / 2), (ws->height / 2.25) + 200, 100, 20 }, "Load Save")) {
-      sds->selected_index = 1;
+      if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "LOAD FILE")) {
+        sds->selected_index = saves + 1;
+      }
     }
 
   EndDrawing();

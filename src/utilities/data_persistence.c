@@ -32,12 +32,13 @@ bool save_data(user_project_data *user_data) {
 }
 
 void load_data(user_project_data *user_data) {
-  char data_ext[5] = ".dat";
-  char *project_file_name = strcat(user_data->project_name, data_ext);
+  // char data_ext[5] = ".dat";
+  // char *project_file_name = strcat(user_data->project_name, data_ext);
 
   TraceLog(LOG_DEBUG, "Attempting to load game data");
+  printf("This is the project file name: %s\n", user_data->project_name);
 
-  FILE *fileData = fopen(get_full_path(project_file_name), "rb");
+  FILE *fileData = fopen(get_full_path(user_data->project_name), "rb");
 
   if (fileData != NULL) {
     fseek(fileData, 0, SEEK_END);
