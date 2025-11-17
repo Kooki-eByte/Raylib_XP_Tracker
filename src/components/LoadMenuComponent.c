@@ -26,11 +26,9 @@ saveDataSelector GetUserSaveContent() {
 
   while ((entry = readdir(dir)) != NULL) {
     if (strlen(entry->d_name) <= 1 || strstr(entry->d_name, "..\0")) {
-      // printf("not reading the . and .. of the directories\n");
       continue;
     }
 
-    printf("Filename: %s\n", entry->d_name);
     strcpy(saveData.user_save_data[ind], entry->d_name);
     ind++;
   }
@@ -38,15 +36,20 @@ saveDataSelector GetUserSaveContent() {
   return saveData;
 }
 
-void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
+void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws, enum GameState *gs) {
+  u8 enable_create_button = 0;
+  
   BeginDrawing();
     ClearBackground(BLACK);
 
     // Create Save files available to click as well as a delete button
     for (b32 saves = 0; saves < 3; saves++) {
       // If less than 3 save files are found then skip step
-      if (sds->user_save_data[saves] == NULL || strlen(sds->user_save_data[saves]) == 0) continue;
-      printf("Filename: [ %s ] is being read now!\n", sds->user_save_data[saves]);
+      if (sds->user_save_data[saves] == NULL || strlen(sds->user_save_data[saves]) == 0) {
+        enable_create_button = 1;
+        continue;
+      }
+
       char save_title[MAX_SAVE_CHAR_LIMIT];
       strncpy(save_title, sds->user_save_data[saves], MAX_SAVE_CHAR_LIMIT - 1);
       save_title[MAX_SAVE_CHAR_LIMIT - 1] = '\0';  // Ensure null termination
@@ -62,6 +65,14 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws) {
 
       if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "LOAD FILE")) {
         sds->selected_index = saves + 1;
+      }
+    }
+
+    if (enable_create_button == 1) {
+      if (GuiButton((Rectangle){ (ws->width / 2), (ws->height / 2.25) + 200, 150, 30 }, "Create New Project")) {
+        // NOTE: Anything greater than 3 means that we are making a new project save file
+        sds->selected_index = 4;
+        *gs = NEW_PROJ;
       }
     }
 

@@ -12,4 +12,4 @@
 // Use data_persistence to get all of the user_save_data and return a saveDataSelector struct for LoadMenuComponent
 saveDataSelector GetUserSaveContent();
 
-void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws);
+void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws, enum GameState *gs);
