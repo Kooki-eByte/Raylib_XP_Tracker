@@ -1,7 +1,7 @@
 SRC_CORE := $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
 OUTPUT_BIN := ./bin
-LINUX_APP := $(OUTPUT_BIN)/main
-WINDOWS_APP := $(OUTPUT_BIN)/main.exe
+LINUX_APP := $(OUTPUT_BIN)/xp_tracker
+WINDOWS_APP := $(OUTPUT_BIN)/xp_tracker.exe
 
 # Compiler Settings
 CC := gcc
