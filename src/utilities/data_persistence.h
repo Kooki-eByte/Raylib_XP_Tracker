@@ -17,6 +17,7 @@ typedef struct user_project_data {
 
 typedef struct saveDataSelector {
   char *user_save_data[3];
+  b32 existing_projects_count;
   // NOTE: Index by length, will need to -1 for proper indexing
   b32 selected_index;
 } saveDataSelector;
