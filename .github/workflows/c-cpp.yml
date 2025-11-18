@@ -1,0 +1,78 @@
+name: Build Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'        # trigger on version tags like v1.0.0
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2 / MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-raylib
+
+      - name: Add MinGW to PATH
+        run: |
+          echo "Added to PATH"
+        shell: bash
+        env:
+          PATH: ${{ env.PATH }}:/mingw64/bin
+
+      - name: Build executable
+        shell: bash
+        run: |
+          mingw32-make -f Makefile PLATFORM=PLATFORM_DESKTOP CC=x86_64-w64-mingw32-gcc \
+             AR=x86_64-w64-mingw32-ar \
+             TARGET=windows
+        # adjust the above arguments to match your Makefile’s windows build target
+
+      - name: Rename output for release
+        run: |
+          mv bin/xp_tracker.exe Raylib_XP_Tracker_windows_x64.exe
+        # adjust path/name to whatever your Makefile outputs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Raylib_XP_Tracker_windows_x64
+          path: Raylib_XP_Tracker_windows_x64.exe
+
+  create-github-release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Raylib_XP_Tracker_windows_x64
+          path: .
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Release ${{ github.ref_name }}
+            Built Windows executable for your XP Tracker using raylib.
+          draft: false
+          prerelease: false
+
+      - name: Upload binary to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Raylib_XP_Tracker_windows_x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
