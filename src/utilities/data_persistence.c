@@ -1,12 +1,24 @@
 #include "data_persistence.h"
 
+static bool has_dat_file_ext(char *filename) {
+  char dat_ext[5] = ".dat";
+
+  char *result = strstr(filename, dat_ext);
+
+  return result != NULL;
+  
+}
+
 static char *get_full_path(char *filename) {
   char *filepath = "save_data/";
-
   char *full_path_to_file = (char *)malloc(1 + strlen(filepath) + strlen(filename));
 
   strcpy(full_path_to_file, filepath);
   strcat(full_path_to_file, filename);
+  
+  if (!has_dat_file_ext(filename)) {
+    strcat(full_path_to_file, ".dat");
+  }
 
   return full_path_to_file;
 }
