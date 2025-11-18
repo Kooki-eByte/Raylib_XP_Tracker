@@ -31,6 +31,7 @@ saveDataSelector GetUserSaveContent() {
 
     strcpy(saveData.user_save_data[ind], entry->d_name);
     ind++;
+    saveData.existing_projects_count = ind;
   }
 
   return saveData;
@@ -40,7 +41,7 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws, enum GameS
   u8 enable_create_button = 0;
   
   BeginDrawing();
-    ClearBackground(BLACK);
+    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
     // Create Save files available to click as well as a delete button
     for (b32 saves = 0; saves < 3; saves++) {
@@ -54,22 +55,23 @@ void LoadMenuComponent(saveDataSelector *sds, xp_window_settings *ws, enum GameS
       strncpy(save_title, sds->user_save_data[saves], MAX_SAVE_CHAR_LIMIT - 1);
       save_title[MAX_SAVE_CHAR_LIMIT - 1] = '\0';  // Ensure null termination
 
-      DrawText(save_title, (ws->width / 2) - 75, (ws->height / 2.25) + (20 * saves), 16, BEIGE);
+      DrawText(save_title, (ws->width / 2) - 250, (ws->height / 2.25) + (20 * saves), 20, DARKGRAY);
 
       // Handle Delete
-      if (GuiButton((Rectangle){ (ws->width / 2) + 200, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
+      if (GuiButton((Rectangle){ (ws->width / 2) + 150, (ws->height / 2.25) + (20 * saves), 100, 20 }, "Delete Save")) {
         if (delete_data(save_title)) {
           *sds = GetUserSaveContent();
         }
       }
 
-      if (GuiButton((Rectangle){ (ws->width / 2) + 100, (ws->height / 2.25) + (20 * saves), 100, 20 }, "LOAD FILE")) {
+      // Handle Loading file
+      if (GuiButton((Rectangle){ (ws->width / 2) + 30, (ws->height / 2.25) + (20 * saves), 100, 20 }, "LOAD FILE")) {
         sds->selected_index = saves + 1;
       }
     }
 
     if (enable_create_button == 1) {
-      if (GuiButton((Rectangle){ (ws->width / 2), (ws->height / 2.25) + 200, 150, 30 }, "Create New Project")) {
+      if (GuiButton((Rectangle){ (ws->width / 2) - 50, (ws->height / 2.25) + 200, 150, 30 }, "Create New Project")) {
         // NOTE: Anything greater than 3 means that we are making a new project save file
         sds->selected_index = 4;
         *gs = NEW_PROJ;

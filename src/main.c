@@ -24,6 +24,7 @@
 #include "../include/raygui.h"
 
 int get_window_center_x(xp_window_settings *ws) { return (ws->height / 2); }
+int get_window_center_y(xp_window_settings *ws) { return (ws->width / 2); }
 
 char *get_exp_percentage(f32 max_exp, f32 *current_exp) {
   f32 exp_percent_remaining = *current_exp / max_exp * 100;
@@ -139,13 +140,21 @@ int main(void) {
       .value = {'0', '\0'},
   };
 
+  TextInputField createNewProjectField = {
+    .bounds = (Rectangle){center_screen_pos_x - 150,
+                            (center_screen_pos_y / 2) + 75, 300, 48},
+    .isFocused = false,
+    .length = 11,
+    .value = {'p', 'l', 'a', 'c', 'e', 'h', 'o', 'l', 'd', 'e', 'r', '\0'}
+  };
+  // 
+
   cursor_settings cursor_setting = {.cursorTimer = 0.0f,
                                     .cursorVisible = false,
                                     .cursor_ON_time = 1.0f,
                                     .cursor_OFF_time = 0.5f};
 
-  saveDataSelector save_data_content = {0};
-  save_data_content = GetUserSaveContent();
+  saveDataSelector save_data_content = GetUserSaveContent();
 
   // Game loop
   while (!WindowShouldClose()) {
@@ -168,24 +177,37 @@ int main(void) {
     }
     
     if (game_state == NEW_PROJ) {
-        // Make a new save
-        BeginDrawing();
-        ClearBackground(BLACK);
+      // Make a new save
+      update_text_input_field(&createNewProjectField, &cursor_setting);
 
-        DrawText("Please name your new project to track:", (720 / 2) - 150,
-                 (480 / 2) - 100, 20, DARKGRAY);
-        DrawRectangleLinesEx(
-            (Rectangle){(720 / 2) - 150, (480 / 2) - 50, 300, 50}, 2, BLUE);
-        b32 text_width = MeasureText(user_data.project_name, 20);
-        b32 cursor_width = 2;
-        b32 cursor_height = 20;
-        DrawRectangle((720 / 2) - 150 + 10 + text_width, (480 / 2) - 50 + 15,
-                      cursor_width, cursor_height, BLACK);
+      BeginDrawing();
+      ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
-        EndDrawing();
-      } 
+      DrawText("Please name your new project to track:", get_window_center_y(&window_settings) - 150,
+                get_window_center_x(&window_settings) - 120, 20, DARKGRAY);
+
+      draw_text_input_field(&createNewProjectField, &cursor_setting);
       
-      if (game_state == PROJ_SELECTED) {
+      if (GuiButton((Rectangle){ 
+        get_window_center_y(&window_settings) - 50,
+        (get_window_center_x(&window_settings) / 2.25) + 200,
+        150,
+        30 
+      }, "Make Project")) {
+        if (strlen(createNewProjectField.value) > 2) {
+          strcpy_s(user_data.project_name, sizeof(user_data.project_name), createNewProjectField.value);
+          
+          game_state = PROJ_SELECTED;
+        } else {
+          fprintf(stderr, "[ERR]: failed to make new project!");
+          return false;
+        }
+      }
+
+      EndDrawing();
+    } 
+      
+    if (game_state == PROJ_SELECTED) {
       // Main loop
       update_number_input_field(&hoursInput, &cursor_setting);
       update_number_input_field(&minutesInput, &cursor_setting);
@@ -215,7 +237,7 @@ int main(void) {
         }
         if (minutesInput.length > 0) {
           if (gain_exp_min(atoi(minutesInput.value), &user_data.current_exp,
-                           &user_data.max_exp)) {
+                            &user_data.max_exp)) {
             handle_level_up(&user_data.user_level);
             showMessageBox = true;
           }
@@ -223,10 +245,10 @@ int main(void) {
 
         if (save_data(&user_data)) {
           TraceLog(LOG_INFO, "File [%s] Saved successfully!",
-                   user_data.project_name);
+                    user_data.project_name);
         } else {
           TraceLog(LOG_WARNING, "File [%s] was not saved successfully! T_T",
-                   user_data.project_name);
+                    user_data.project_name);
         }
       }
 
@@ -241,9 +263,9 @@ int main(void) {
       }
 
       DrawText("Hours:", center_screen_pos_x - 150, (center_screen_pos_y / 2),
-               20, DARKGRAY);
+                20, DARKGRAY);
       DrawText("Minutes:", center_screen_pos_x + 50, (center_screen_pos_y / 2),
-               20, DARKGRAY);
+                20, DARKGRAY);
 
       draw_number_input_field(&hoursInput, &cursor_setting);
       draw_number_input_field(&minutesInput, &cursor_setting);
