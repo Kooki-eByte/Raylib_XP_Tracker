@@ -1,51 +1,87 @@
-name: Build and Release Windows
+name: Build Windows Release
+
+permissions:
+  contents: write
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup msys2
+      - name: Set up MSYS2 with MinGW64
         uses: msys2/setup-msys2@v2
         with:
-          msystem: mingw64
           update: true
+          msystem: MINGW64
+          install: >
+            mingw-w64-x86_64-gcc
+            make
+            mingw-w64-x86_64-raylib
+            mingw-w64-x86_64-glfw
 
-      - name: Install dependencies (GLFW + Raylib)
+      - name: Verify toolchain
         shell: msys2 {0}
         run: |
-          pacman -S --noconfirm \
-          mingw-w64-x86_64-gcc \
-          mingw-w64-x86_64-pkg-config \
-          mingw-w64-x86_64-raylib \
-          mingw-w64-x86_64-glfw
+          which gcc
+          gcc --version
+          which make
+          pkg-config --modversion raylib
+          pkg-config --modversion glfw3
 
-      - name: Create bin folder
-        run: mkdir bin
+      - name: Create bin directory
+        shell: msys2 {0}
+        run: mkdir -p bin
 
-      - name: Build XP Tracker
+      - name: Build Windows Binary
+        shell: msys2 {0}
+        env:
+          OS: Windows_NT
+        run: |
+          make ./bin/xp_tracker.exe
+
+      - name: Collect DLLs and package ZIP
         shell: msys2 {0}
         run: |
-          rm -rf ./bin/*
-          gcc -static -I./include -L/mingw64/lib \
-          ./src/main.c ./src/components/InputFieldComponent.c ./src/components/LoadMenuComponent.c ./src/utilities/data_persistence.c \
-          -o bin/xp_tracker.exe \
-          -Wall -Werror -Wimplicit-function-declaration -std=c99 \
-          -lraylib -lglfw3 \
-          -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32 -luuid -lkernel32 -limm32 -lws2_32 -lcomctl32 -lshlwapi
+          mkdir -p release
+          cp bin/xp_tracker.exe release/
+          # Copy raylib and glfw DLLs to release folder
+          cp /mingw64/bin/raylib.dll release/ || true
+          cp /mingw64/bin/glfw3.dll release/ || true
+          # Optional: copy other necessary MinGW DLLs
+          cp /mingw64/bin/libwinpthread-1.dll release/ || true
+          cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
+          cp /mingw64/bin/libstdc++-6.dll release/ || true
+          cd release
+          zip -r Raylib_XP_Tracker_Windows_x64.zip *
 
-      - name: Upload Release Asset
+      - name: Upload ZIP Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Raylib_XP_Tracker_Windows_x64
+          path: release/Raylib_XP_Tracker_Windows_x64.zip
+
+  release-windows:
+    needs: build-windows
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download ZIP Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Raylib_XP_Tracker_Windows_x64
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: bin/xp_tracker.exe
-          overwrite_files: true
+          files: Raylib_XP_Tracker_Windows_x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
