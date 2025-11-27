@@ -70,8 +70,11 @@ jobs:
           $bytes = [System.Convert]::FromBase64String($pfxBase64)
 
           # Load the certificate using the password (NO interactive prompt)
-          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-          $cert.Import($bytes, $pfxPassword, 'Exportable,EphemeralKeySet')
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+            $bytes,
+            $pfxPassword,
+            [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+          )
 
           Write-Host "===== Certificate Info ====="
           Write-Host "Subject   : $($cert.Subject)"
