@@ -57,29 +57,58 @@ jobs:
       - name: Verify Code Signing Certificate EKU
         shell: pwsh
         run: |
-          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
-          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.SIGN_CERT_PFX }}"))
+          # Read secrets
+          $pfxBase64   = "${{ secrets.SIGN_CERT_PFX }}"
+          $pfxPassword = "${{ secrets.SIGN_CERT_PASSWORD }}"
 
-          # Export cert info so we can inspect EKUs
-          $dump = certutil -dump $pfxPath
-
-          Write-Host "==== Certificate Info ===="
-          Write-Host $dump
-
-          if ($dump -notmatch "1.3.6.1.5.5.7.3.3") {
-            Write-Host "Cert does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3)."
-            Write-Host "Cert cannot be used to sign EXE files."
+          if ([string]::IsNullOrWhiteSpace($pfxBase64)) {
+            Write-Error "SIGN_CERT_PFX secret is empty."
             exit 1
           }
-          
-          Write-Host "Cert has valid code signing EKU."
+
+          # Decode base64 to raw PFX bytes
+          $bytes = [System.Convert]::FromBase64String($pfxBase64)
+
+          # Load the certificate using the password (NO interactive prompt)
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+          $cert.Import($bytes, $pfxPassword, 'Exportable,EphemeralKeySet')
+
+          Write-Host "===== Certificate Info ====="
+          Write-Host "Subject   : $($cert.Subject)"
+          Write-Host "Issuer    : $($cert.Issuer)"
+          Write-Host "Thumbprint: $($cert.Thumbprint)"
+
+          # Check for Code Signing EKU (1.3.6.1.5.5.7.3.3)
+          $hasCodeSigningEku = $false
+
+          foreach ($ext in $cert.Extensions) {
+            if ($ext -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) {
+              foreach ($oid in $ext.EnhancedKeyUsages) {
+                Write-Host "EKU: $($oid.FriendlyName) ($($oid.Value))"
+                if ($oid.Value -eq '1.3.6.1.5.5.7.3.3') {
+                  $hasCodeSigningEku = $true
+                }
+              }
+            }
+          }
+
+          if (-not $hasCodeSigningEku) {
+            Write-Error "Certificate does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3). It cannot be used to sign EXEs."
+            exit 1
+          }
+
+          Write-Host "Certificate has Code Signing EKU."
+
+          # Write the PFX to disk for signtool
+          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, $bytes)
+          Write-Host "PFX written to $pfxPath"
       
       - name: Sign Windows Binary
         shell: pwsh
         run: |
           # Decode the PFX secret to a file
           $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
-          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.SIGN_CERT_PFX }}"))
 
           # Sign the executable
           signtool sign `
