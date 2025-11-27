@@ -28,13 +28,13 @@ endif
 
 ifeq ($(LOCAL_LIB),)
     LIB_PATH := -L/mingw64/lib
-		RAYLIB_LIBS += -lglfw3
+		RAYLIB_LIBS += -lraylib -lglfw3
 else
     LIB_PATH := -L./lib
+		RAYLIB_LIBS += -lraylib
 endif
 
 RAYLIB_LIBS += \
-	-lraylib \
 	-lopengl32 \
 	-lgdi32 \
 	-lwinmm \
