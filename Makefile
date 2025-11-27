@@ -8,6 +8,8 @@ CFLAGS := -Wall -Werror -Wimplicit-function-declaration -std=c99
 WINDOWS_EXE := $(OUTPUT_BIN)/$(TARGET_NAME).exe
 LINUX_EXE := $(OUTPUT_BIN)/$(TARGET_NAME)
 
+RAYLIB_LIBS :=
+
 # ------------------------ WINDOWS ------------------------
 ifeq ($(OS),Windows_NT)
 
@@ -20,6 +22,7 @@ LOCAL_LIB := $(wildcard ./lib)
 
 ifeq ($(LOCAL_INC),)
     INCLUDE_PATH := -I/mingw64/include
+		RAYLIB_LIBS += -lglfw3
 else
     INCLUDE_PATH := -I./include
 endif
@@ -30,7 +33,7 @@ else
     LIB_PATH := -L./lib
 endif
 
-RAYLIB_LIBS := \
+RAYLIB_LIBS += \
 	-lraylib \
 	-lopengl32 \
 	-lgdi32 \
