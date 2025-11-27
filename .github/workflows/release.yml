@@ -91,8 +91,8 @@ jobs:
       - name: Upload ZIP Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Raylib_XP_Tracker_Windows_x64
-          path: release/Raylib_XP_Tracker_Windows_x64.zip
+          name: XP_Tracker_Windows_x64
+          path: release/XP_Tracker_Windows_x64.zip
 
   release-windows:
     needs: build-windows
@@ -102,11 +102,11 @@ jobs:
       - name: Download ZIP Artifact
         uses: actions/download-artifact@v4
         with:
-          name: Raylib_XP_Tracker_Windows_x64
+          name: XP_Tracker_Windows_x64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Raylib_XP_Tracker_Windows_x64.zip
+          files: XP_Tracker_Windows_x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
