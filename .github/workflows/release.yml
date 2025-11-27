@@ -56,8 +56,8 @@ jobs:
           mkdir -p release
           cp bin/xp_tracker.exe release/
           # Copy raylib and glfw DLLs dynamically
-          find /mingw64 -name "raylib.dll" -exec cp {} release/ \;
-          find /mingw64 -name "glfw3.dll" -exec cp {} release/ \;
+          find /mingw64/bin -name "libraylib.dll" -exec cp {} release/ \;
+          find /mingw64/bin -name "glfw3.dll" -exec cp {} release/ \;
           # Optional: copy other necessary MinGW DLLs
           cp /mingw64/bin/libwinpthread-1.dll release/ || true
           cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
