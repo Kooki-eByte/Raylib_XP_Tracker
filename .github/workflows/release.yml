@@ -54,11 +54,31 @@ jobs:
         id: signtool
         uses: KamaranL/add-signtool-action@v1
 
+      - name: Verify Code Signing Certificate EKU
+        shell: pwsh
+        run: |
+          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.SIGN_CERT_PFX }}"))
+
+          # Export cert info so we can inspect EKUs
+          $dump = certutil -dump $pfxPath
+
+          Write-Host "==== Certificate Info ===="
+          Write-Host $dump
+
+          if ($dump -notmatch "1.3.6.1.5.5.7.3.3") {
+            Write-Host "Cert does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3)."
+            Write-Host "Cert cannot be used to sign EXE files."
+            exit 1
+          }
+          
+          Write-Host "Cert has valid code signing EKU."
+      
       - name: Sign Windows Binary
         shell: pwsh
         run: |
           # Decode the PFX secret to a file
-          $pfxPath = "$env:RUNNER_TEMP\code_sign.pfx"
+          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
           [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.SIGN_CERT_PFX }}"))
 
           # Sign the executable
