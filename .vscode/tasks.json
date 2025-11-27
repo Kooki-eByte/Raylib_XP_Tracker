@@ -46,11 +46,11 @@
         "command": "powershell",
         "args": [
           "-Command",
-          "./bin/main.exe"
+          "./bin/xp_tracker.exe"
         ]
       },
       "linux": {
-        "command": "./bin/main"
+        "command": "./bin/xp_tracker"
       },
       "options": {
         "cwd": "${workspaceFolder}"

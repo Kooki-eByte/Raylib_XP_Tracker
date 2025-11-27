@@ -1,34 +1,62 @@
 SRC_CORE := $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
 OUTPUT_BIN := ./bin
-LINUX_APP := $(OUTPUT_BIN)/xp_tracker
-WINDOWS_APP := $(OUTPUT_BIN)/xp_tracker.exe
+TARGET_NAME := xp_tracker
 
-# Compiler Settings
 CC := gcc
-C_STD := c99
-CFLAGS := -Wall -Werror -Wimplicit-function-declaration
-DEBUG_FLAG := -g
+CFLAGS := -Wall -Werror -Wimplicit-function-declaration -std=c99
 
-# OS-specific settings
+WINDOWS_EXE := $(OUTPUT_BIN)/$(TARGET_NAME).exe
+LINUX_EXE := $(OUTPUT_BIN)/$(TARGET_NAME)
+
+# ------------------------ WINDOWS ------------------------
 ifeq ($(OS),Windows_NT)
-RAYLIB_FLAGS := -lraylib -lgdi32 -lwinmm
-LIB := -Llib
-RAYLIB_DLL := $(LIB)
-MAIN_APP_TARGET := $(WINDOWS_APP)
+
+EXE := $(WINDOWS_EXE)
+STATIC_LINK := -static
+
+# Prefer local project paths if they exist
+LOCAL_INC := $(wildcard ./include)
+LOCAL_LIB := $(wildcard ./lib)
+
+ifeq ($(LOCAL_INC),)
+    INCLUDE_PATH := -I/mingw64/include
 else
-# Linux
-RAYLIB_FLAGS := -lraylib -lgdi32 -lwinmm
-RAYLIB_LINUX_FLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
-MAIN_APP_TARGET := $(LINUX_APP)
+    INCLUDE_PATH := -I./include
 endif
 
-all: $(MAIN_APP_TARGET)
+ifeq ($(LOCAL_LIB),)
+    LIB_PATH := -L/mingw64/lib
+else
+    LIB_PATH := -L./lib
+endif
 
-$(LINUX_APP):
-	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(MAIN_APP_TARGET) $(CFLAGS) $(RAYLIB_LINUX_FLAGS)
+RAYLIB_LIBS := \
+	-lraylib \
+	-lopengl32 \
+	-lgdi32 \
+	-lwinmm \
+	-lcomdlg32 \
+	-lole32 \
+	-luuid \
+	-lkernel32 \
+	-limm32 \
+	-lws2_32 \
+	-lcomctl32 \
+	-lshlwapi
 
-$(WINDOWS_APP):
-	$(CC) -std=$(C_STD) $(DEBUG_FLAG) $(SRC_CORE) -o $(MAIN_APP_TARGET) $(CFLAGS) $(RAYLIB_DLL) $(RAYLIB_FLAGS)
+$(EXE): $(SRC_CORE)
+	$(CC) $(STATIC_LINK) $(INCLUDE_PATH) $(LIB_PATH) \
+	$(SRC_CORE) -o $@ $(CFLAGS) $(RAYLIB_LIBS)
 
-#clean:
-#	rm -rf $(OUTPUT_BIN)/main.exe
+endif
+
+# ----------------------- TARGETS -------------------------
+.PHONY: all clean dirs
+
+all: dirs $(EXE)
+
+dirs:
+	mkdir -p $(OUTPUT_BIN)
+
+clean:
+	rm -rf $(OUTPUT_BIN)/*
