@@ -1,64 +1,48 @@
-name: Build Windows Release
-
-permissions:
-  contents: write
+name: Build and Release Windows
 
 on:
   push:
     tags:
-      - "v*.*.*"
-  workflow_dispatch:
+      - 'v*'
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up MSYS2 with MinGW64
+      - name: Setup msys2
         uses: msys2/setup-msys2@v2
         with:
+          msystem: mingw64
           update: true
-          msystem: MINGW64
-          install: >
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-raylib
-            mingw-w64-x86_64-glfw
-            make
-            zip
 
-      - name: Build static Windows binary
+      - name: Install dependencies (GLFW + Raylib)
         shell: msys2 {0}
         run: |
-          mkdir -p bin
-          make clean
-          make
+          pacman -S --noconfirm \
+          mingw-w64-x86_64-gcc \
+          mingw-w64-x86_64-pkg-config \
+          mingw-w64-x86_64-raylib \
+          mingw-w64-x86_64-glfw
 
-      - name: Package .zip
+      - name: Build XP Tracker
         shell: msys2 {0}
         run: |
-          zip XP_Tracker_Windows_x64.zip ./bin/xp_tracker.exe
+          rm -rf ./bin/*
+          gcc -static -I./include -L/mingw64/lib \
+          ./src/main.c ./src/components/InputFieldComponent.c ./src/components/LoadMenuComponent.c ./src/utilities/data_persistence.c \
+          -o bin/xp_tracker.exe \
+          -Wall -Werror -Wimplicit-function-declaration -std=c99 \
+          -lraylib -lglfw3 \
+          -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32 -luuid -lkernel32 -limm32 -lws2_32 -lcomctl32 -lshlwapi
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: XP_Tracker_Windows_x64
-          path: XP_Tracker_Windows_x64.zip
-
-  release:
-    needs: build-windows
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: XP_Tracker_Windows_x64
-
-      - name: Create GitHub Release
+      - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: XP_Tracker_Windows_x64.zip
+          files: bin/xp_tracker.exe
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
