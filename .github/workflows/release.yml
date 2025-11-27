@@ -50,79 +50,79 @@ jobs:
         run: |
           make ./bin/xp_tracker.exe
       
-      - name: Locate signtool
-        id: signtool
-        uses: KamaranL/add-signtool-action@v1
+      # - name: Locate signtool
+      #   id: signtool
+      #   uses: KamaranL/add-signtool-action@v1
 
-      - name: Verify Code Signing Certificate EKU
-        shell: pwsh
-        run: |
-          # Read secrets
-          $pfxBase64   = "${{ secrets.SIGN_CERT_PFX }}"
-          $pfxPassword = "${{ secrets.SIGN_CERT_PASSWORD }}"
+      # - name: Verify Code Signing Certificate EKU
+      #   shell: pwsh
+      #   run: |
+      #     # Read secrets
+      #     $pfxBase64   = "${{ secrets.SIGN_CERT_PFX }}"
+      #     $pfxPassword = "${{ secrets.SIGN_CERT_PASSWORD }}"
 
-          if ([string]::IsNullOrWhiteSpace($pfxBase64)) {
-            Write-Error "SIGN_CERT_PFX secret is empty."
-            exit 1
-          }
+      #     if ([string]::IsNullOrWhiteSpace($pfxBase64)) {
+      #       Write-Error "SIGN_CERT_PFX secret is empty."
+      #       exit 1
+      #     }
 
-          # Decode base64 to raw PFX bytes
-          $bytes = [System.Convert]::FromBase64String($pfxBase64)
+      #     # Decode base64 to raw PFX bytes
+      #     $bytes = [System.Convert]::FromBase64String($pfxBase64)
 
-          # Load the certificate using the password (NO interactive prompt)
-          $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
-            $bytes,
-            $pfxPassword
-          )
+      #     # Load the certificate using the password (NO interactive prompt)
+      #     $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+      #       $bytes,
+      #       $pfxPassword
+      #     )
 
-          Write-Host "===== Certificate Info ====="
-          Write-Host "Subject   : $($cert.Subject)"
-          Write-Host "Issuer    : $($cert.Issuer)"
-          Write-Host "Thumbprint: $($cert.Thumbprint)"
+      #     Write-Host "===== Certificate Info ====="
+      #     Write-Host "Subject   : $($cert.Subject)"
+      #     Write-Host "Issuer    : $($cert.Issuer)"
+      #     Write-Host "Thumbprint: $($cert.Thumbprint)"
 
-          # Check for Code Signing EKU (1.3.6.1.5.5.7.3.3)
-          $hasCodeSigningEku = $false
+      #     # Check for Code Signing EKU (1.3.6.1.5.5.7.3.3)
+      #     $hasCodeSigningEku = $false
 
-          foreach ($ext in $cert.Extensions) {
-            if ($ext -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) {
-              foreach ($oid in $ext.EnhancedKeyUsages) {
-                Write-Host "EKU: $($oid.FriendlyName) ($($oid.Value))"
-                if ($oid.Value -eq '1.3.6.1.5.5.7.3.3') {
-                  $hasCodeSigningEku = $true
-                }
-              }
-            }
-          }
+      #     foreach ($ext in $cert.Extensions) {
+      #       if ($ext -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) {
+      #         foreach ($oid in $ext.EnhancedKeyUsages) {
+      #           Write-Host "EKU: $($oid.FriendlyName) ($($oid.Value))"
+      #           if ($oid.Value -eq '1.3.6.1.5.5.7.3.3') {
+      #             $hasCodeSigningEku = $true
+      #           }
+      #         }
+      #       }
+      #     }
 
-          if (-not $hasCodeSigningEku) {
-            Write-Error "Certificate does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3). It cannot be used to sign EXEs."
-            exit 1
-          }
+      #     if (-not $hasCodeSigningEku) {
+      #       Write-Error "Certificate does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3). It cannot be used to sign EXEs."
+      #       exit 1
+      #     }
 
-          Write-Host "Certificate has Code Signing EKU."
+      #     Write-Host "Certificate has Code Signing EKU."
 
-          # Write the PFX to disk for signtool
-          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
-          [System.IO.File]::WriteAllBytes($pfxPath, $bytes)
-          Write-Host "PFX written to $pfxPath"
+      #     # Write the PFX to disk for signtool
+      #     $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
+      #     [System.IO.File]::WriteAllBytes($pfxPath, $bytes)
+      #     Write-Host "PFX written to $pfxPath"
       
-      - name: Sign Windows Binary
-        shell: pwsh
-        run: |
-          # Decode the PFX secret to a file
-          $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
+      # - name: Sign Windows Binary
+      #   shell: pwsh
+      #   run: |
+      #     # Decode the PFX secret to a file
+      #     $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
 
-          # Sign the executable
-          signtool sign `
-            /f $pfxPath `
-            /p "${{ secrets.SIGN_CERT_PASSWORD }}" `
-            /tr http://timestamp.digicert.com `
-            /td sha256 `
-            /fd sha256 `
-            bin\xp_tracker.exe
+      #     # Sign the executable
+      #     signtool sign `
+      #       /f $pfxPath `
+      #       /p "${{ secrets.SIGN_CERT_PASSWORD }}" `
+      #       /tr http://timestamp.digicert.com `
+      #       /td sha256 `
+      #       /fd sha256 `
+      #       bin\xp_tracker.exe
 
-          # Optional: verify signature
-          signtool verify /pa /v bin\xp_tracker.exe
+      #     # Optional: verify signature
+      #     signtool verify /pa /v bin\xp_tracker.exe
 
       - name: Collect DLLs and package ZIP
         shell: msys2 {0}
