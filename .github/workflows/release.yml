@@ -24,36 +24,27 @@ jobs:
           msystem: MINGW64
           install: >
             mingw-w64-x86_64-gcc
-            make
             mingw-w64-x86_64-raylib
+            make
+            zip
 
-      - name: Verify toolchain
+      - name: Build static Windows binary
         shell: msys2 {0}
         run: |
-          which gcc
-          gcc --version
-          which make
+          mkdir -p bin
+          make clean
+          make
 
-      - name: Create bin directory
+      - name: Package .zip
         shell: msys2 {0}
-        run: mkdir -p bin
-
-      - name: Build Windows Binary
-        shell: msys2 {0}
-        env:
-          OS: Windows_NT
         run: |
-          make ./bin/xp_tracker.exe
-
-      - name: Package binary
-        run: |
-          copy bin\\xp_tracker.exe Raylib_XP_Tracker_Windows_x64.exe
+          zip XP_Tracker_Windows_x64.zip ./bin/xp_tracker.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Raylib_XP_Tracker_Windows_x64
-          path: Raylib_XP_Tracker_Windows_x64.exe
+          name: XP_Tracker_Windows_x64
+          path: XP_Tracker_Windows_x64.zip
 
   release:
     needs: build-windows
@@ -62,11 +53,11 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Raylib_XP_Tracker_Windows_x64
+          name: XP_Tracker_Windows_x64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Raylib_XP_Tracker_Windows_x64.exe
+          files: XP_Tracker_Windows_x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
