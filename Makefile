@@ -22,13 +22,13 @@ LOCAL_LIB := $(wildcard ./lib)
 
 ifeq ($(LOCAL_INC),)
     INCLUDE_PATH := -I/mingw64/include
-		RAYLIB_LIBS += -lglfw3
 else
     INCLUDE_PATH := -I./include
 endif
 
 ifeq ($(LOCAL_LIB),)
     LIB_PATH := -L/mingw64/lib
+		RAYLIB_LIBS += -lglfw3
 else
     LIB_PATH := -L./lib
 endif
