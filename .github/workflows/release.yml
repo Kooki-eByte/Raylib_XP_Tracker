@@ -137,7 +137,7 @@ jobs:
           cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
           cp /mingw64/bin/libstdc++-6.dll release/ || true
           cd release
-          zip -r Raylib_XP_Tracker_Windows_x64.zip *
+          zip -r XP_Tracker_Windows_x64.zip *
 
       - name: Upload ZIP Artifact
         uses: actions/upload-artifact@v4
