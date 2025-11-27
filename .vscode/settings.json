@@ -13,7 +13,10 @@
     "type_traits": "c",
     "utility": "c",
     "raylib.h": "c",
-    "data_persistence.h": "c"
+    "data_persistence.h": "c",
+    "platform.h": "c",
+    "stdbool.h": "c",
+    "stdio.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

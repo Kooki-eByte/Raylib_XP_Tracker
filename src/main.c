@@ -23,6 +23,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "../include/raygui.h"
 
+#include "platform/platform.h"
+
 int get_window_center_x(xp_window_settings *ws) { return (ws->height / 2); }
 int get_window_center_y(xp_window_settings *ws) { return (ws->width / 2); }
 
@@ -100,6 +102,9 @@ char *int_to_string(b32 num) {
 }
 
 int main(void) {
+  // Check if save_data dir exists and create one if not
+  create_directory();
+
   enum GameState game_state = PROJ_MENU;
 
   xp_window_settings window_settings = {
