@@ -46,7 +46,8 @@ RAYLIB_LIBS += \
 	-limm32 \
 	-lws2_32 \
 	-lcomctl32 \
-	-lshlwapi
+	-lshlwapi \
+	-luser32
 
 $(EXE): $(SRC_CORE)
 	$(CC) $(STATIC_LINK) $(INCLUDE_PATH) $(LIB_PATH) \
