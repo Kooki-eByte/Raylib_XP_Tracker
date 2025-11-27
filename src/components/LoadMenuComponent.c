@@ -19,7 +19,7 @@ saveDataSelector GetUserSaveContent() {
 
   dir = opendir(SAVE_BIN);
   if (dir == NULL) {
-    fprintf(stderr, "Unable to open directory");
+    fprintf(stderr, "Unable to open directory\n");
   }
 
   b32 ind = 0;
