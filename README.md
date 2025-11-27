@@ -2,6 +2,8 @@
 
 A gamified version of keeping track of the time you spend on your hobby, studying, messing around, anything really! Just something to give you that feeling like even though you may feel like you are not making much progress you truly are!
 
+Still a WIP but initial beta is ready!!
+
 ## Supporting OS
 
 - Windows
