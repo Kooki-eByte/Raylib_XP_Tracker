@@ -28,6 +28,9 @@ jobs:
           mingw-w64-x86_64-raylib \
           mingw-w64-x86_64-glfw
 
+      - name: Create bin folder
+        run: mkdir bin
+
       - name: Build XP Tracker
         shell: msys2 {0}
         run: |
