@@ -49,6 +49,29 @@ jobs:
           OS: Windows_NT
         run: |
           make ./bin/xp_tracker.exe
+        
+      - name: Sign Windows Binary
+        shell: powershell
+        run: |
+          # Decode the PFX secret to a file
+          $pfxPath = "$env:RUNNER_TEMP\code_sign.pfx"
+          [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String("${{ secrets.SIGN_CERT_PFX }}"))
+
+          # Locate signtool.exe automatically
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe | Select-Object -First 1
+          if (-not $signtool) { throw "signtool.exe not found on runner" }
+
+          # Sign the executable
+          & $signtool.FullName sign `
+            /f $pfxPath `
+            /p "${{ secrets.SIGN_CERT_PASSWORD }}" `
+            /tr http://timestamp.digicert.com `
+            /td sha256 `
+            /fd sha256 `
+            bin\xp_tracker.exe
+
+          # Optional: verify signature
+          & $signtool.FullName verify /pa /v bin\xp_tracker.exe
 
       - name: Collect DLLs and package ZIP
         shell: msys2 {0}
