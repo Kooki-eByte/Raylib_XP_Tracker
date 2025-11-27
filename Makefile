@@ -14,7 +14,8 @@ RAYLIB_LIBS :=
 ifeq ($(OS),Windows_NT)
 
 EXE := $(WINDOWS_EXE)
-STATIC_LINK := -static
+# -static
+STATIC_LINK :=
 
 # Prefer local project paths if they exist
 LOCAL_INC := $(wildcard ./include)
@@ -28,10 +29,10 @@ endif
 
 ifeq ($(LOCAL_LIB),)
     LIB_PATH := -L/mingw64/lib
-		RAYLIB_LIBS += -raylib -lglfw3
+		RAYLIB_LIBS += -lraylib -lglfw3
 else
     LIB_PATH := -L./lib
-		RAYLIB_LIBS += -raylib
+		RAYLIB_LIBS += -lraylib
 endif
 
 RAYLIB_LIBS += \
