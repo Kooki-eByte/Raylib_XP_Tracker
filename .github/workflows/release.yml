@@ -28,6 +28,7 @@ jobs:
             mingw-w64-x86_64-raylib
             mingw-w64-x86_64-glfw
             mingw-w64-x86_64-pkg-config
+            zip
 
       - name: Verify toolchain
         shell: msys2 {0}
@@ -54,9 +55,9 @@ jobs:
         run: |
           mkdir -p release
           cp bin/xp_tracker.exe release/
-          # Copy raylib and glfw DLLs to release folder
-          cp /mingw64/bin/raylib.dll release/ || true
-          cp /mingw64/bin/glfw3.dll release/ || true
+          # Copy raylib and glfw DLLs dynamically
+          find /mingw64 -name "raylib.dll" -exec cp {} release/ \;
+          find /mingw64 -name "glfw3.dll" -exec cp {} release/ \;
           # Optional: copy other necessary MinGW DLLs
           cp /mingw64/bin/libwinpthread-1.dll release/ || true
           cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
