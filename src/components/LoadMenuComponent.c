@@ -17,7 +17,9 @@ saveDataSelector GetUserSaveContent() {
   saveData.user_save_data[2] = malloc(sizeof(char) * MAX_SAVE_CHAR_LIMIT);
   strcpy(saveData.user_save_data[2], "\0");
 
-  dir = opendir(SAVE_BIN);
+  char *save_file_dir = get_save_dir("xp_tracker/save_data"); 
+
+  dir = opendir(save_file_dir);
   if (dir == NULL) {
     fprintf(stderr, "Unable to open directory\n");
   }
@@ -34,6 +36,7 @@ saveDataSelector GetUserSaveContent() {
     saveData.existing_projects_count = ind;
   }
 
+  free(save_file_dir);
   return saveData;
 }
 

@@ -8,6 +8,7 @@
 #include "../../include/raygui.h"
 #include "../utilities/data_persistence.h"
 #include "../utilities/settings.h"
+#include "../platform/platform.h"
 
 // Use data_persistence to get all of the user_save_data and return a saveDataSelector struct for LoadMenuComponent
 saveDataSelector GetUserSaveContent();

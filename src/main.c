@@ -103,7 +103,10 @@ char *int_to_string(b32 num) {
 
 int main(void) {
   // Check if save_data dir exists and create one if not
-  create_directory();
+  if (!create_directory()) {
+    fprintf(stderr, "Failed to handle creating or checking if directory was made!\n");
+    return 1;
+  }
 
   enum GameState game_state = PROJ_MENU;
 
@@ -171,11 +174,8 @@ int main(void) {
       }
       if (save_data_content.selected_index >= 1 &&
           save_data_content.selected_index <= 3) {
-        char *project =
-            save_data_content
-                .user_save_data[(save_data_content.selected_index - 1)];
-        strcpy_s(user_data.project_name, sizeof(user_data.project_name),
-                 project);
+        char *project = save_data_content.user_save_data[(save_data_content.selected_index - 1)];
+        strcpy(user_data.project_name, project);
         load_data(&user_data);
         game_state = PROJ_SELECTED;
       }
@@ -200,7 +200,7 @@ int main(void) {
         30 
       }, "Make Project")) {
         if (strlen(createNewProjectField.value) > 2) {
-          strcpy_s(user_data.project_name, sizeof(user_data.project_name), createNewProjectField.value);
+          strcpy(user_data.project_name, createNewProjectField.value);
           
           game_state = PROJ_SELECTED;
         } else {

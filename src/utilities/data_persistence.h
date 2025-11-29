@@ -5,8 +5,7 @@
 
 #include "../defines.h"
 #include "../../include/raylib.h"
-
-#define SAVE_BIN "./save_data/"
+#include "../platform/platform.h"
 
 typedef struct user_project_data {
   char project_name[255];
