@@ -112,11 +112,17 @@ jobs:
           tar -czvf XP_Tracker_Linux_Ubuntu_x64.tar.gz xp_tracker
           zip XP_Tracker_Linux_Ubuntu_x64.zip xp_tracker
 
-      - name: Upload Linux Ubuntu Artifacts
+      - name: Upload Ubuntu Tarball
         uses: actions/upload-artifact@v4
         with:
-          name: XP_Tracker_Linux_Ubuntu_x64
-          path: release/*
+          name: XP_Tracker_Linux_Ubuntu_x64_tar
+          path: release/XP_Tracker_Linux_Ubuntu_x64.tar.gz
+
+      - name: Upload Ubuntu Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Ubuntu_x64_zip
+          path: release/XP_Tracker_Linux_Ubuntu_x64.zip
 
 
   # --------------------------
@@ -158,11 +164,17 @@ jobs:
           tar -czvf XP_Tracker_Linux_Arch_x64.tar.gz xp_tracker
           zip XP_Tracker_Linux_Arch_x64.zip xp_tracker
 
-      - name: Upload Linux Arch Artifacts
+      - name: Upload Arch Tarball
         uses: actions/upload-artifact@v4
         with:
-          name: XP_Tracker_Linux_Arch_x64
-          path: release/*
+          name: XP_Tracker_Linux_Arch_x64_tar
+          path: release/XP_Tracker_Linux_Arch_x64.tar.gz
+
+      - name: Upload Arch Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Arch_x64_zip
+          path: release/XP_Tracker_Linux_Arch_x64.zip
 
   # --------------------------
   # CREATE RELEASE WITH ALL ARTIFACTS
@@ -181,21 +193,38 @@ jobs:
           name: XP_Tracker_Windows_x64
           path: artifacts/
 
-      - name: Download Ubuntu Artifact
+      - name: Download Ubuntu Tarball
         uses: actions/download-artifact@v4
         with:
-          name: XP_Tracker_Linux_Ubuntu_x64
+          name: XP_Tracker_Linux_Ubuntu_x64_tar
           path: artifacts/
 
-      - name: Download Arch Artifact
+      - name: Download Ubuntu Zip
         uses: actions/download-artifact@v4
         with:
-          name: XP_Tracker_Linux_Arch_x64
+          name: XP_Tracker_Linux_Ubuntu_x64_zip
+          path: artifacts/
+
+      - name: Download Arch Tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Arch_x64_tar
+          path: artifacts/
+
+      - name: Download Arch Zip
+        uses: actions/download-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Arch_x64_zip
           path: artifacts/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*
+          files: |
+            artifacts/XP_Tracker_Windows_x64.zip
+            artifacts/XP_Tracker_Linux_Ubuntu_x64.tar.gz
+            artifacts/XP_Tracker_Linux_Ubuntu_x64.zip
+            artifacts/XP_Tracker_Linux_Arch_x64.tar.gz
+            artifacts/XP_Tracker_Linux_Arch_x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
