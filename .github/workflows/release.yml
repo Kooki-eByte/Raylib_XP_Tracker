@@ -1,4 +1,4 @@
-name: Build Windows Release
+name: Build Multi-Platform Release
 
 permissions:
   contents: write
@@ -10,6 +10,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  # --------------------------
+  # WINDOWS BUILD JOB
+  # --------------------------
   build-windows:
     runs-on: windows-latest
 
@@ -30,134 +33,153 @@ jobs:
             mingw-w64-x86_64-pkg-config
             zip
 
-      - name: Verify toolchain
-        shell: msys2 {0}
-        run: |
-          which gcc
-          gcc --version
-          which make
-          pkg-config --modversion raylib
-          pkg-config --modversion glfw3
-
-      - name: Create bin directory
-        shell: msys2 {0}
-        run: mkdir -p bin
-
       - name: Build Windows Binary
         shell: msys2 {0}
         env:
           OS: Windows_NT
         run: |
+          mkdir -p bin
           make ./bin/xp_tracker.exe
-      
-      # - name: Locate signtool
-      #   id: signtool
-      #   uses: KamaranL/add-signtool-action@v1
 
-      # - name: Verify Code Signing Certificate EKU
-      #   shell: pwsh
-      #   run: |
-      #     # Read secrets
-      #     $pfxBase64   = "${{ secrets.SIGN_CERT_PFX }}"
-      #     $pfxPassword = "${{ secrets.SIGN_CERT_PASSWORD }}"
-
-      #     if ([string]::IsNullOrWhiteSpace($pfxBase64)) {
-      #       Write-Error "SIGN_CERT_PFX secret is empty."
-      #       exit 1
-      #     }
-
-      #     # Decode base64 to raw PFX bytes
-      #     $bytes = [System.Convert]::FromBase64String($pfxBase64)
-
-      #     # Load the certificate using the password (NO interactive prompt)
-      #     $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
-      #       $bytes,
-      #       $pfxPassword
-      #     )
-
-      #     Write-Host "===== Certificate Info ====="
-      #     Write-Host "Subject   : $($cert.Subject)"
-      #     Write-Host "Issuer    : $($cert.Issuer)"
-      #     Write-Host "Thumbprint: $($cert.Thumbprint)"
-
-      #     # Check for Code Signing EKU (1.3.6.1.5.5.7.3.3)
-      #     $hasCodeSigningEku = $false
-
-      #     foreach ($ext in $cert.Extensions) {
-      #       if ($ext -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) {
-      #         foreach ($oid in $ext.EnhancedKeyUsages) {
-      #           Write-Host "EKU: $($oid.FriendlyName) ($($oid.Value))"
-      #           if ($oid.Value -eq '1.3.6.1.5.5.7.3.3') {
-      #             $hasCodeSigningEku = $true
-      #           }
-      #         }
-      #       }
-      #     }
-
-      #     if (-not $hasCodeSigningEku) {
-      #       Write-Error "Certificate does NOT contain Code Signing EKU (1.3.6.1.5.5.7.3.3). It cannot be used to sign EXEs."
-      #       exit 1
-      #     }
-
-      #     Write-Host "Certificate has Code Signing EKU."
-
-      #     # Write the PFX to disk for signtool
-      #     $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
-      #     [System.IO.File]::WriteAllBytes($pfxPath, $bytes)
-      #     Write-Host "PFX written to $pfxPath"
-      
-      # - name: Sign Windows Binary
-      #   shell: pwsh
-      #   run: |
-      #     # Decode the PFX secret to a file
-      #     $pfxPath = "$env:RUNNER_TEMP\xp_tracker_signing.pfx"
-
-      #     # Sign the executable
-      #     signtool sign `
-      #       /f $pfxPath `
-      #       /p "${{ secrets.SIGN_CERT_PASSWORD }}" `
-      #       /tr http://timestamp.digicert.com `
-      #       /td sha256 `
-      #       /fd sha256 `
-      #       bin\xp_tracker.exe
-
-      #     # Optional: verify signature
-      #     signtool verify /pa /v bin\xp_tracker.exe
-
-      - name: Collect DLLs and package ZIP
+      - name: Collect DLLs and Package ZIP
         shell: msys2 {0}
         run: |
           mkdir -p release
           cp bin/xp_tracker.exe release/
-          # Copy raylib and glfw DLLs dynamically
           find /mingw64/bin -name "libraylib.dll" -exec cp {} release/ \;
           find /mingw64/bin -name "glfw3.dll" -exec cp {} release/ \;
-          # Optional: copy other necessary MinGW DLLs
           cp /mingw64/bin/libwinpthread-1.dll release/ || true
           cp /mingw64/bin/libgcc_s_seh-1.dll release/ || true
           cp /mingw64/bin/libstdc++-6.dll release/ || true
           cd release
           zip -r XP_Tracker_Windows_x64.zip *
 
-      - name: Upload ZIP Artifact
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: XP_Tracker_Windows_x64
           path: release/XP_Tracker_Windows_x64.zip
 
-  release-windows:
-    needs: build-windows
+  # --------------------------
+  # UBUNTU (DEBIAN) LINUX BUILD
+  # --------------------------
+  build-linux-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download ZIP Artifact
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential \
+            make \
+            gcc \
+            libraylib-dev \
+            libglfw3-dev \
+            zip \
+            tar
+
+      - name: Build Linux Binary
+        env:
+          OS: Linux
+        run: |
+          mkdir -p bin
+          make ./bin/xp_tracker
+
+      - name: Package Linux Ubuntu Artifacts
+        run: |
+          mkdir -p release
+          cp bin/xp_tracker release/
+          cd release
+          tar -czvf XP_Tracker_Linux_Ubuntu_x64.tar.gz xp_tracker
+          zip XP_Tracker_Linux_Ubuntu_x64.zip xp_tracker
+
+      - name: Upload Linux Ubuntu Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Ubuntu_x64
+          path: release/*
+
+  # --------------------------
+  # ARCH LINUX BUILD
+  # --------------------------
+  build-linux-arch:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Install Dependencies
+        run: |
+          pacman -Sy --noconfirm \
+            base-devel \
+            gcc \
+            make \
+            raylib \
+            glfw-x11 \
+            zip \
+            tar \
+            git
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Linux Binary
+        env:
+          OS: Linux
+        run: |
+          mkdir -p bin
+          make ./bin/xp_tracker
+
+      - name: Package Linux Arch Artifacts
+        run: |
+          mkdir -p release
+          cp bin/xp_tracker release/
+          cd release
+          tar -czvf XP_Tracker_Linux_Arch_x64.tar.gz xp_tracker
+          zip XP_Tracker_Linux_Arch_x64.zip xp_tracker
+
+      - name: Upload Linux Arch Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Arch_x64
+          path: release/*
+
+  # --------------------------
+  # CREATE RELEASE WITH ALL ARTIFACTS
+  # --------------------------
+  release:
+    needs:
+      - build-windows
+      - build-linux-ubuntu
+      - build-linux-arch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
           name: XP_Tracker_Windows_x64
+          path: artifacts/
+
+      - name: Download Ubuntu Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Ubuntu_x64
+          path: artifacts/
+
+      - name: Download Arch Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: XP_Tracker_Linux_Arch_x64
+          path: artifacts/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: XP_Tracker_Windows_x64.zip
+          files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
