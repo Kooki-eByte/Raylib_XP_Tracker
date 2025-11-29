@@ -3,8 +3,12 @@
 #include "platform.h"
 #include <windows.h>
 
+char *get_save_dir(const char *appname) {
+  return appname;
+}
+
 bool create_directory() {
-  if (CreateDirectory("save_data", 0)) {
+  if (CreateDirectory(get_save_dir("save_data"), 0)) {
     printf("Successfully created directory!\n");
     return true;
   } else {
