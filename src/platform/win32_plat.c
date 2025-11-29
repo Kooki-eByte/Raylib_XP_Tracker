@@ -4,7 +4,11 @@
 #include <windows.h>
 
 char *get_save_dir(const char *appname) {
-  return appname;
+  char * path = NULL;
+
+  strcpy(path, appname);
+
+  return path;
 }
 
 bool create_directory() {
