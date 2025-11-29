@@ -77,10 +77,25 @@ jobs:
             build-essential \
             make \
             gcc \
-            libraylib-dev \
+            cmake \
             libglfw3-dev \
+            libasound2-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libxfixes-dev \
+            libxinerama-dev \
+            libxcursor-dev \
             zip \
-            tar
+            tar \
+            git
+
+      - name: Build & Install raylib from source
+        run: |
+          git clone --depth 1 https://github.com/raysan5/raylib.git
+          cd raylib/src
+          make PLATFORM=PLATFORM_DESKTOP
+          sudo make install
 
       - name: Build Linux Binary
         env:
@@ -102,6 +117,7 @@ jobs:
         with:
           name: XP_Tracker_Linux_Ubuntu_x64
           path: release/*
+
 
   # --------------------------
   # ARCH LINUX BUILD
