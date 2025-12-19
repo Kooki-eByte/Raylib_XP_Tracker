@@ -15,10 +15,10 @@ char *get_save_dir(const char *appname) {
   char *path = NULL;
   
   if (xdg != NULL && xdg[0] != '\0') {
-    
-    size_t len = strlen(xdg) + strlen(appname) + 2;
+    // TODO: Check if this works with linux side
+    size_t len = strlen(xdg) + strlen("xp_tracker/") + strlen(appname) + 2;
     path = malloc(len);
-    snprintf(path, len, "%s%s", xdg, appname);
+    snprintf(path, len, "%s%s%s", xdg, "xp_tracker/",appname);
   
   } else if (home != NULL && home[0] != '\0') {
   

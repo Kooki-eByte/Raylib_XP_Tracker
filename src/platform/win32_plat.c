@@ -1,13 +1,15 @@
 #ifdef _WIN32
-
-#include "platform.h"
 #include <windows.h>
 
+#include "platform.h"
+
 char *get_save_dir(const char *appname) {
-  char * path = NULL;
+  fprintf(stderr, "get_save_dir is called\n");
+  char *path = (char *)malloc(sizeof(appname));
 
+  fprintf(stderr, "about to call strcpy for char * null val src\n");
   strcpy(path, appname);
-
+  fprintf(stderr, "cpy string to path\n name of string %s\n", path);
   return path;
 }
 
@@ -18,7 +20,7 @@ bool create_directory() {
   } else {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {
-      printf("Directory already exists!\n");
+      fprintf(stderr, "Directory already exists!\n");
       return true;
     } else {
       fprintf(stderr, "Failed to create directory!\n");

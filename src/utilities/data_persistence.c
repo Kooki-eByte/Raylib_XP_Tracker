@@ -10,7 +10,8 @@ static bool has_dat_file_ext(char *filename) {
 }
 
 static char *get_full_path(char *filename) {
-  char *filepath = get_save_dir("xp_tracker/save_data");
+  // TODO: Was "xp_tracker/save_data" most likely due to linux, will need to test this on linux side
+  char *filepath = get_save_dir("save_data");
   strcat(filepath, "/");
   
   char *full_path_to_file = (char *)malloc(1 + strlen(filepath) + strlen(filename));
