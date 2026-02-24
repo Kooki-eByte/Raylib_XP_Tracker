@@ -15,7 +15,6 @@ char *get_save_dir(const char *appname) {
   char *path = NULL;
 
   if (xdg != NULL && xdg[0] != '\0') {
-
     size_t len = strlen(xdg) + strlen(appname) + 2;
     path = malloc(len);
     snprintf(path, len, "%s%s", xdg, appname);

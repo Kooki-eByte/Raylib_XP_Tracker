@@ -17,9 +17,10 @@ saveDataSelector GetUserSaveContent() {
   saveData.user_save_data[2] = malloc(sizeof(char) * MAX_SAVE_CHAR_LIMIT);
   strcpy(saveData.user_save_data[2], "\0");
 
-  char *save_file_dir = get_save_dir("xp_tracker/save_data"); 
+  // FIXME: Was "xp_tracker/save_data" most likely due to linux, will need to test this
+  char *save_file_dir = get_save_dir("save_data"); 
 
-  dir = opendir(save_file_dir);
+  dir = opendir((const char *)save_file_dir);
   if (dir == NULL) {
     fprintf(stderr, "Unable to open directory\n");
   }
